@@ -1,0 +1,35 @@
+# Core
+hyprland
+xdg-desktop-portal-hyprland
+wayland
+wayland-protocols
+
+# UI
+waybar
+rofi-wayland
+kitty
+dunst
+fastfetch
+waypaper
+
+# System
+networkmanager
+bluez
+bluez-utils
+pipewire
+wireplumber
+pavucontrol
+polkit-gnome
+xdg-user-dirs
+
+# Utils
+wl-clipboard
+grim
+slurp
+brightnessctl
+playerctl
+
+# Fonts
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-emoji

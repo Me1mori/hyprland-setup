@@ -1,0 +1,157 @@
+[
+    {
+        "output": "DP-1",
+        "layer": "top",
+        "position": "top",
+        "height": 28,
+        "margin-top": 6,
+        "margin-left": 10,
+        "margin-right": 10,
+
+        "modules-left": [
+            "custom/user",
+            "hyprland/workspaces"
+        ],
+
+        "modules-center": [
+            "clock"
+        ],
+
+        "modules-right": [
+            "custom/power",
+            "network",
+            "pulseaudio",
+            "memory",
+            "cpu",
+            "temperature",
+            "custom/gpu",
+            "custom/gpu_temp",
+            "tray"
+        ],
+
+        "custom/user": {
+            "format": "  Me1mori",
+            "on-click": "wlogout",
+            "tooltip": false
+        },
+
+        "clock": {
+            "format": "{:%A %I:%M%p}",
+            "locale": "es_MX.UTF-8",
+            "tooltip": false,
+            "interval":"1",
+            "on-click-right": "swaync-client -t"
+        },
+
+        "network": {
+            "format-wifi": "  {essid}",
+            "format-ethernet": "󰈀  Ethernet",
+            "format-disconnected": "⚠  Offline",
+            "tooltip-format": "{ipaddr}",
+            "on-click": "nm-connection-editor",
+            "on-click-right": "kitty -e nmtui",
+            "max-length": 15
+        },
+
+        "custom/power": {
+            "format": "",
+            "on-click": "rofi -show power-menu -modi power-menu:rofi-power-menu"
+        },
+
+        "custom/gpu": {
+            "exec": "radeontop -d - -l 1 | grep -oP 'gpu \\K[0-9]+'",
+            "interval": 5,
+            "format": " {}%"
+        },
+
+        "custom/gpu_temp": {
+            "exec": "sensors | grep -m 1 'edge' | awk '{print $2}'",
+            "interval": 5,
+            "format": " {}"
+        },
+
+        "temperature": {
+            "thermal-zone": 0,
+            "format": " {temperatureC}°C"
+        },
+
+        "pulseaudio": {
+            "format": "{icon}",
+            "on-click": "pavucontrol"
+        },
+
+        "memory": {
+            "format": " {}%"
+        },
+
+        "cpu": {
+            "format": " {}%"
+        },
+
+        "tray": {
+            "spacing": 8
+        }
+    },
+    {
+        "output": "HDMI-A-1",
+        "layer": "top",
+        "position": "top",
+        "height": 28,
+        "margin-top": 6,
+        "margin-left": 10,
+        "margin-right": 10,
+        "modules-left": ["hyprland/workspaces"],
+        "modules-center": ["clock"],
+        "modules-right": ["network",
+            "memory",
+            "cpu",
+            "temperature",
+            "custom/gpu",
+            "custom/gpu_temp",
+            "tray"
+        ],
+
+        "network": {
+            "format-wifi": "",
+            "format-ethernet": "󰈀 ",
+            "format-disconnected": "🌐 ",
+            "tooltip-format": "{ipaddr}",
+            "on-click": "kitty -e nmtui"
+        },
+
+        "clock": {
+            "format": "{:%A %I:%M%p}",
+            "locale": "es_MX.UTF-8",
+            "tooltip": false
+        },
+
+        "memory": {
+            "format": " {}%"
+        },
+
+        "cpu": {
+            "format": " {}%"
+        },
+
+        "temperature": {
+            "thermal-zone": 0,
+            "format": "{temperatureC}°C"
+        },
+
+        "custom/gpu": {
+            "exec": "radeontop -d - -l 1 | grep -oP 'gpu \\K[0-9]+'",
+            "interval": 5,
+            "format": " {}%"
+        },
+
+        "custom/gpu_temp": {
+            "exec": "sensors | grep -m 1 'edge' | awk '{print $2}'",
+            "interval": 5,
+            "format": "{}"
+        },
+
+        "tray": {
+            "spacing": 8
+        }
+    }
+]
