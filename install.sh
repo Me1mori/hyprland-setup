@@ -13,7 +13,7 @@ sudo pacman -Syu --noconfirm
 
 echo ""
 echo "Instalando paquetes base..."
-sudo pacman -S --needed --noconfirm - < packages.txt
+sudo pacman -S --needed --noconfirm $(grep -v '^#' packages.txt | grep -v '^$')
 
 echo ""
 echo "Selecciona tu GPU:"
@@ -68,7 +68,7 @@ if [ -f aur.txt ]; then
         rm -rf yay
     fi
 
-    yay -S --needed --noconfirm - < aur.txt
+    yay -S --needed --noconfirm $(grep -v '^#' aur.txt | grep -v '^$')
 fi
 
 # --- Servicios esenciales ---
@@ -91,4 +91,13 @@ fi
 
 echo ""
 echo "Instalación completada ✔"
-echo "Reinicia el sistema."
+
+read -p "¿Iniciar Hyprland ahora? (s/n): " START_NOW
+
+if [[ "$START_NOW" == "s" || "$START_NOW" == "S" ]]; then
+    export XDG_SESSION_TYPE=wayland
+    export XDG_CURRENT_DESKTOP=Hyprland
+    exec Hyprland
+else
+    echo "Puedes iniciarlo manualmente con: Hyprland"
+fi
