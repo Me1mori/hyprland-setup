@@ -118,6 +118,7 @@ sudo systemctl enable bluetooth
 
 # --- Crear carpetas usuario ---
 xdg-user-dirs-update
+sudo pacman -S rsync --noconfirm
 
 # --- Copiar configuraciones ---
 if [ -d "$CONFIG_DIR" ]; then
