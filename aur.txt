@@ -1,3 +1,3 @@
 yay
 hyprshot
-waypaper-git
+waypaper
