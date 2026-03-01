@@ -1,0 +1,90 @@
+[
+  {
+    "output": "0",
+    "layer": "top",
+    "position": "top",
+    "height": 40,
+    "modules-left": ["custom/user", "hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": ["network", "pulseaudio", "memory", "cpu", "temperature", "custom/gpu", "custom/gpu_temp", "tray"],
+    "all-outputs": false,
+
+    "custom/user": {
+      "format": "  {env:USER} ",
+      "on-click": "rofi -show power-menu -modi power-menu:rofi-power-menu",
+      "tooltip": false
+    },
+
+    "hyprland/workspaces": {
+      "format": "{name}",
+      "on-click": "activate",
+      "active-only": false,
+      "all-outputs": false,
+      "format-icons": {
+        "1": "󰆍",
+        "2": "󰈹",
+        "3": "󰖟",
+        "4": "󰎆",
+        "5": "󰊠",
+        "default": ""
+      }
+    },
+
+    "clock": {
+      "format": "{:L%a %d %I:%M%p}",
+      "locale": "es_ES.UTF-8",
+      "tooltip": false,
+      "interval": 1,
+      "on-click-right": "swaync-client -t"
+    },
+
+    "network": {
+      "format-wifi": "  ",
+      "format-ethernet": " 󰈀 ",
+      "format-disconnected": "⚠ ",
+      "tooltip-format": "{ipaddr}",
+      "on-click": "kitty -e nmtui"
+    },
+
+    "custom/gpu": {
+      "exec": "radeontop -d - -l 1 | grep -oP 'gpu \\K[0-9]+'",
+      "interval": 5,
+      "format": " {}%"
+    },
+
+    "custom/gpu_temp": {
+      "exec": "sensors | grep -m 1 'edge' | awk '{print $2}'",
+      "interval": 5,
+      "format": " {}"
+    },
+
+    "temperature": {
+      "thermal-zone": 0,
+      "format": " {temperatureC}°C"
+    },
+
+    "pulseaudio": {
+      "format": "{icon} {volume}%",
+      "format-muted": "󰝟 Muted",
+      "format-icons": {
+        "default": ["󰕿", "󰖀", "󰕾"]
+      },
+      "on-click": "pavucontrol",
+      "on-double-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "on-click-right": "pactl list short sinks | awk '{print $2}' | rofi -dmenu -p 'Output' | xargs -r pactl set-default-sink"
+    },
+
+    "memory": {
+      "format": " {}%"
+    },
+
+    "cpu": {
+      "format": " {}%"
+    },
+
+    "tray": {
+      "spacing": 8,
+      "show-passive-items": false
+    }
+  }
+]

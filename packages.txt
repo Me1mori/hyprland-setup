@@ -1,25 +1,44 @@
 # Core
 hyprland
+hyprlock
+hyprpaper
 xdg-desktop-portal-hyprland
 wayland
 wayland-protocols
+dbus
 
-# UI
+
+# UI / Compositor + Barra + Launchers
 waybar
+swaync
+eww
+swww
 rofi-wayland
+rofi
 kitty
 dunst
 fastfetch
+waypaper
+mako
+xbindkeys
+thunar
 
-# System
+
+# System / Audio / Network / Permissions
 networkmanager
 bluez
 bluez-utils
 pipewire
+pipewire-pulse
 wireplumber
 pavucontrol
 polkit-gnome
 xdg-user-dirs
+xdg-utils
+udisks2
+gvfs
+sudo
+
 
 # Utils
 wl-clipboard
@@ -27,8 +46,11 @@ grim
 slurp
 brightnessctl
 playerctl
+firefox
+
 
 # Fonts
 ttf-jetbrains-mono-nerd
+ttf-font-awesome
 noto-fonts
 noto-fonts-emoji

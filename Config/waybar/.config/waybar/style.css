@@ -1,0 +1,124 @@
+* {
+    font-family: JetBrainsMono Nerd Font, sans-serif;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+/* -------------------------
+   Left modules: user + workspaces
+------------------------- */
+#custom-user,
+#workspaces {
+    background: #1e1f2e;
+    color: #cdd6f4;
+}
+
+/* Usuario dinámico */
+#custom-user {
+    padding: 0 12px 0 34px;
+    border-radius: 0 0 0 0;
+    background-image: url("/home/{env:USER}/.config/hypr/face.png");
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    color: #bb9af7;
+}
+
+/* Workspaces */
+#workspaces {
+    padding: 4px 8px;
+    border-radius: 0 0 14px 0;
+}
+
+#workspaces button {
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    color: #7aa2f7;
+    margin: 1px;
+}
+
+#workspaces button.active {
+    background: #7aa2f7;
+    color: #1a1b26;
+}
+
+/* -------------------------
+   Center module: clock
+------------------------- */
+#clock {
+    background: #1e1f2e;
+    color: #7aa2f7;
+    font-weight: 600;
+    padding: 0 16px;
+    border-radius: 0 0 14px 14px;
+}
+
+/* -------------------------
+   Right modules: network, audio, memory, CPU, temp, GPU, tray
+------------------------- */
+#network,
+#pulseaudio,
+#memory,
+#cpu,
+#temperature,
+#custom-gpu,
+#custom-gpu_temp {
+    background: #1e1f2e;
+    color: #cdd6f4;
+    padding: 0 10px;
+}
+
+/* Primera y última burbuja */
+#network { border-radius: 0 0 0 14px; }
+#custom-gpu_temp { border-radius: 0 0 14px 0; }
+
+/* Colores individuales */
+#network          { color: #7dcfff; }
+#pulseaudio       { color: #bb9af7; }
+#memory           { color: #9ece6a; }
+#cpu              { color: #e0af68; }
+#temperature      { color: #ff9e64; }
+#custom-gpu       { color: #7dcfff; }
+#custom-gpu_temp  { color: #f7768e; }
+
+/* TRAY */
+#tray {
+    background: transparent;
+    padding: 0;
+}
+
+#tray > widget {
+    background: #1e1f2e;
+    padding: 0 10px;
+    border-radius: 14px;
+}
+
+/* -------------------------
+   Ajuste compacto para monitores secundarios
+   (detectar monitor principal con output: 0)
+------------------------- */
+window#waybar:not([id="0"]) > * {
+    font-size: 12px;
+}
+
+window#waybar:not([id="0"]) #memory,
+window#waybar:not([id="0"]) #cpu,
+window#waybar:not([id="0"]) #temperature,
+window#waybar:not([id="0"]) #custom-gpu,
+window#waybar:not([id="0"]) #custom-gpu_temp {
+    border-radius: 0;
+    margin: 0;
+    padding: 0 5px;
+}
+
+window#waybar:not([id="0"]) #memory  { border-radius: 0 0 0 14px; }
+window#waybar:not([id="0"]) #cpu     { padding: 0 2px 0 8px; }
+window#waybar:not([id="0"]) #temperature { padding: 0 8px 0 2px; }
+window#waybar:not([id="0"]) #custom-gpu { padding: 0 2px 0 8px; }
+window#waybar:not([id="0"]) #custom-gpu_temp { padding: 0 8px 0 2px; }

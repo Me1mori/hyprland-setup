@@ -1,0 +1,7 @@
+configuration {
+    lock-command: "hyprlock";
+    logout-command: "hyprctl dispatch exit";
+    reboot-command: "systemctl reboot";
+    shutdown-command: "systemctl poweroff";
+    suspend-command: "systemctl suspend";
+}

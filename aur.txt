@@ -1,3 +1,8 @@
 yay
 hyprshot
 waypaper
+rofi-power-menu
+xdg-desktop-portal-hyprland
+grim
+slurp
+protonplus

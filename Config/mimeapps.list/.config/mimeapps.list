@@ -1,0 +1,12 @@
+[Default Applications]
+text/plain=kitty.desktop
+application/x-zerosize=kitty.desktop
+application/vnd.debian.binary-package=thunar.desktop
+
+[Added Associations]
+text/plain=code.desktop;kitty.desktop;
+application/x-zerosize=thunar.desktop;kitty.desktop;
+application/vnd.debian.binary-package=thunar.desktop;
+text/x-csrc=firefox.desktop;
+text/css=firefox.desktop;
+application/x-shellscript=code.desktop;

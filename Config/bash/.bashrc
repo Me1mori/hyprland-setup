@@ -44,3 +44,6 @@ ctrl_l_fastfetch() {
 }
 
 bind -x '"\C-l": ctrl_l_fastfetch'
+export PATH=$PATH:/home/me1mori/.spicetify
+
+export PATH=$PATH:~/.spicetify

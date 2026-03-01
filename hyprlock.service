@@ -1,0 +1,12 @@
+# ~/.config/systemd/user/hyprlock.service
+[Unit]
+Description=Hyprland Lock Screen
+After=graphical.target
+
+[Service]
+ExecStart=/usr/bin/hyprlock
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=default.target

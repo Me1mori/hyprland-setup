@@ -1,154 +1,238 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-CONFIG_DIR="home"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_DIR="$REPO_DIR/Config"
 
 echo "==============================="
 echo "   Hyprland Setup Installer"
 echo "==============================="
 echo ""
 
-echo "Actualizando sistema..."
-sudo pacman -Syu --noconfirm
+# 0️⃣ Preguntar por backup
+read -rp "¿Deseas hacer un backup de tus configuraciones actuales antes de instalar? (s/n): " BACKUP_CONFIRM
+if [[ "$BACKUP_CONFIRM" =~ ^[Ss]$ ]]; then
+    BACKUP_DIR="$HOME/backup/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+    echo ""
+    echo "📦 Creando backup en: $BACKUP_DIR ..."
 
-echo ""
-echo "Instalando paquetes base..."
+    copy_with_backup() {
+        local src="$1"
+        local name
+        name=$(basename "$src")
+        if [ -d "$src" ]; then
+            echo "Backup de $name..."
+            rsync -a --ignore-missing-args "$src"/ "$BACKUP_DIR/$name/"
+        else
+            echo "⚠️ $src no encontrado, saltando..."
+        fi
+    }
 
-# Extraemos los paquetes reales de packages.txt
-PACKAGES=$(grep -v '^#' packages.txt | grep -v '^$')
+    # Hacer backup de todo Config/
+    for dir in "$CONFIG_DIR"/*; do
+        copy_with_backup "$dir"
+    done
 
-# Verificamos qué paquetes NO están instalados
-PKGS_TO_INSTALL=()
-for pkg in $PACKAGES; do
-    if ! pacman -Qi "$pkg" &> /dev/null; then
-        PKGS_TO_INSTALL+=("$pkg")
-    fi
+    # Crear restore.sh dentro del backup
+    cat > "$BACKUP_DIR/restore.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+BACKUP_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo "==============================="
+echo "  Restaurar Configuraciones"
+echo "==============================="
+dirs=()
+i=1
+for d in "$BACKUP_DIR"/*; do
+    [ -d "$d" ] || continue
+    name=$(basename "$d")
+    [ "$name" == "restore.sh" ] && continue
+    dirs+=("$d")
+    echo "$i) $name"
+    ((i++))
 done
 
-if [ ${#PKGS_TO_INSTALL[@]} -eq 0 ]; then
-    echo "Todos los paquetes base ya están instalados."
-    PACKAGES_INSTALLED=true
-else
-    sudo pacman -S --needed --noconfirm "${PKGS_TO_INSTALL[@]}"
-    PACKAGES_INSTALLED=false
+echo ""
+echo "Ingresa los números de las carpetas a restaurar separados por espacios (ej: 1 3 5):"
+read -rp "> " SELECTIONS
+for sel in $SELECTIONS; do
+    idx=$((sel-1))
+    if [ "$idx" -ge 0 ] && [ "$idx" -lt "${#dirs[@]}" ]; then
+        src="${dirs[$idx]}"
+        dst="$HOME"
+        echo "Restaurando $(basename "$src")..."
+        rsync -a --progress "$src"/ "$dst"/
+    fi
+done
+echo "✅ Restauración completada."
+EOF
+    chmod +x "$BACKUP_DIR/restore.sh"
+    echo "✅ Backup completado y restore.sh creado en $BACKUP_DIR"
 fi
 
+# 1️⃣ Solicitar tipo de instalación de paquetes
 echo ""
-echo "Selecciona tu GPU:"
+echo "¿Qué paquetes deseas instalar?"
+echo "1) Solo pacman"
+echo "2) Solo AUR"
+echo "3) Ambos"
+read -rp "Opción (1/2/3): " INSTALL_TYPE
+
+install_packages() {
+    local pkg_file="$1"
+    local type="$2"
+    if [ ! -f "$pkg_file" ]; then
+        echo "⚠️ $pkg_file no encontrado. Saltando $type..."
+        return
+    fi
+
+    echo ""
+    echo "📦 Instalando paquetes $type desde $pkg_file..."
+    packages=$(grep -v '^#' "$pkg_file" | grep -v '^$')
+    to_install=()
+    for pkg in $packages; do
+        if [[ "$type" == "pacman" ]]; then
+            if ! pacman -Qi "$pkg" &>/dev/null; then
+                to_install+=("$pkg")
+            fi
+        else
+            if ! pacman -Qi "$pkg" &>/dev/null && ! yay -Qi "$pkg" &>/dev/null; then
+                to_install+=("$pkg")
+            fi
+        fi
+    done
+
+    if [ ${#to_install[@]} -gt 0 ]; then
+        echo "Instalando: ${to_install[*]}"
+        if [[ "$type" == "pacman" ]]; then
+            sudo pacman -Syu --needed --noconfirm "${to_install[@]}"
+        else
+            if ! command -v yay &>/dev/null; then
+                echo "🔧 Instalando yay..."
+                sudo pacman -S --needed --noconfirm base-devel git
+                git clone https://aur.archlinux.org/yay.git /tmp/yay
+                (cd /tmp/yay && makepkg -si --noconfirm)
+                rm -rf /tmp/yay
+            fi
+            yay -S --needed --noconfirm "${to_install[@]}"
+        fi
+    else
+        echo "✅ Todos los paquetes $type ya están instalados."
+    fi
+}
+
+# 2️⃣ Actualizar sistema y ejecutar instalación de paquetes
+echo ""
+echo "🔄 Actualizando sistema..."
+sudo pacman -Syu --noconfirm
+
+case $INSTALL_TYPE in
+    1) install_packages "$REPO_DIR/packages.txt" "pacman" ;;
+    2) install_packages "$REPO_DIR/aur.txt" "aur" ;;
+    3)
+        install_packages "$REPO_DIR/packages.txt" "pacman"
+        install_packages "$REPO_DIR/aur.txt" "aur"
+        ;;
+    *) echo "Opción inválida, se instalarán ambos por defecto."
+       install_packages "$REPO_DIR/packages.txt" "pacman"
+       install_packages "$REPO_DIR/aur.txt" "aur"
+       ;;
+esac
+
+# 3️⃣ Habilitar servicios esenciales
+echo ""
+echo "🔧 Habilitando servicios esenciales..."
+sudo systemctl enable NetworkManager
+sudo systemctl enable bluetooth
+
+# 4️⃣ Copiar configuraciones
+copy_config() {
+    local src="$1"
+    local dst="$HOME"
+    if [ -d "$src" ]; then
+        echo "📂 Copiando configuración desde $(basename "$src")..."
+        rsync -a --progress "$src"/ "$dst"/
+    else
+        echo "⚠️ Directorio $src no encontrado, saltando."
+    fi
+}
+
+copy_config "$CONFIG_DIR/bash"
+copy_config "$CONFIG_DIR/mimeapps.list"
+copy_config "$CONFIG_DIR/hypr"
+copy_config "$CONFIG_DIR/waybar"
+copy_config "$CONFIG_DIR/rofi"
+copy_config "$CONFIG_DIR/rofi-power-menu"
+copy_config "$CONFIG_DIR/waypaper"
+copy_config "$CONFIG_DIR/kitty"
+copy_config "$CONFIG_DIR/fastfetch"
+
+# 5️⃣ Instalar drivers GPU
+echo ""
+echo "🖥 Selecciona tu GPU:"
 echo "1) Intel"
 echo "2) AMD / Ryzen"
 echo "3) NVIDIA"
 echo "4) Máquina Virtual"
 echo "5) Ninguna / Default Mesa"
-echo ""
-
 read -rp "Opción: " GPU_OPTION
 
 install_gpu_drivers() {
     case $1 in
-        1)
-            echo "Instalando drivers Intel..."
-            sudo pacman -S --needed --noconfirm mesa vulkan-intel intel-media-driver
-            ;;
-        2)
-            echo "Instalando drivers AMD..."
-            sudo pacman -S --needed --noconfirm mesa vulkan-radeon xf86-video-amdgpu
-            ;;
+        1) sudo pacman -S --needed --noconfirm mesa vulkan-intel intel-media-driver ;;
+        2) sudo pacman -S --needed --noconfirm mesa vulkan-radeon xf86-video-amdgpu ;;
         3)
-            echo "Instalando drivers NVIDIA..."
             sudo pacman -S --needed --noconfirm nvidia nvidia-utils nvidia-settings
-            echo "IMPORTANTE: NVIDIA en Wayland puede requerir configuración adicional."
+            echo "⚠️ NVIDIA en Wayland puede requerir configuración adicional."
             ;;
-        4)
-            echo "Instalando drivers para Máquina Virtual..."
-            sudo pacman -S --needed --noconfirm mesa xf86-video-vmware virtualbox-guest-utils
-            ;;
-        5)
-            echo "Usando Mesa genérico."
-            sudo pacman -S --needed --noconfirm mesa
-            ;;
-        *)
-            echo "Opción inválida. Continuando con Mesa genérico."
-            sudo pacman -S --needed --noconfirm mesa
-            ;;
+        4) sudo pacman -S --needed --noconfirm mesa xf86-video-vmware virtualbox-guest-utils ;;
+        5|*) sudo pacman -S --needed --noconfirm mesa ;;
     esac
 }
 
 install_gpu_drivers "$GPU_OPTION"
 
-# --- AUR ---
-if [ -f aur.txt ]; then
-    echo ""
-    echo "Instalando soporte AUR..."
-
-    if ! command -v yay &> /dev/null; then
-        sudo pacman -S --needed --noconfirm base-devel git
-        git clone https://aur.archlinux.org/yay.git
-        cd yay
-        makepkg -si --noconfirm
-        cd ..
-        rm -rf yay
-    fi
-
-    # Similar chequeo para paquetes AUR (opcional)
-    AUR_PACKAGES=$(grep -v '^#' aur.txt | grep -v '^$')
-    AUR_TO_INSTALL=()
-    for pkg in $AUR_PACKAGES; do
-        if ! pacman -Qi "$pkg" &> /dev/null && ! yay -Qi "$pkg" &> /dev/null; then
-            AUR_TO_INSTALL+=("$pkg")
-        fi
-    done
-
-    if [ ${#AUR_TO_INSTALL[@]} -eq 0 ]; then
-        echo "Todos los paquetes AUR ya están instalados."
-        AUR_INSTALLED=true
-    else
-        yay -S --needed --noconfirm "${AUR_TO_INSTALL[@]}"
-        AUR_INSTALLED=false
-    fi
-else
-    AUR_INSTALLED=true
+# 6️⃣ Instalar y habilitar Hyprlock con systemd --user
+echo ""
+if ! command -v hyprlock &>/dev/null; then
+    echo "🔒 Instalando Hyprlock..."
+    sudo pacman -S --needed --noconfirm hyprland
 fi
 
-# --- Servicios esenciales ---
+USER_SYSTEMD_DIR="$HOME/.config/systemd/user"
+mkdir -p "$USER_SYSTEMD_DIR"
+
+cat > "$USER_SYSTEMD_DIR/hyprlock.service" <<'EOF'
+[Unit]
+Description=Hyprland Lock Screen
+After=graphical.target
+
+[Service]
+ExecStart=/usr/bin/env hyprlock
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=default.target
+EOF
+
+systemctl --user daemon-reload
+systemctl --user enable hyprlock.service
+systemctl --user start hyprlock.service
+
 echo ""
-echo "Habilitando servicios..."
-sudo systemctl enable NetworkManager
-sudo systemctl enable bluetooth
+echo "✅ Instalación y configuración completadas."
 
-# --- Crear carpetas usuario ---
-xdg-user-dirs-update
-sudo pacman -S rsync --noconfirm
-
-# --- Copiar configuraciones ---
-if [ -d "$CONFIG_DIR" ]; then
-    echo ""
-    echo "Copiando configuraciones..."
-    rsync -av --progress "$CONFIG_DIR"/ ~/
-else
-    echo "Directorio de config no encontrado."
+if [[ "$BACKUP_CONFIRM" =~ ^[Ss]$ ]]; then
+    echo "📂 Backup disponible en $BACKUP_DIR"
+    echo "Puedes restaurar selectivamente con:"
+    echo "   $BACKUP_DIR/restore.sh"
 fi
 
 echo ""
-# Pregunta para reiniciar o iniciar solo si algo se instaló o actualizó
-if [ "$PACKAGES_INSTALLED" = false ] || [ "$AUR_INSTALLED" = false ]; then
-    read -rp "¿Quieres iniciar Hyprland ahora? (s/n): " START
-
-    if [[ "$START" =~ ^[Ss]$ ]]; then
-        export XDG_SESSION_TYPE=wayland
-        export XDG_CURRENT_DESKTOP=Hyprland
-        exec Hyprland
-    else
-        read -rp "¿Quieres reiniciar el sistema ahora? (s/n): " REBOOT
-
-        if [[ "$REBOOT" =~ ^[Ss]$ ]]; then
-            echo "Reiniciando..."
-            sudo reboot
-        else
-            echo "Recuerda reiniciar o iniciar Hyprland manualmente."
-        fi
-    fi
-else
-    echo "No hubo cambios en paquetes, no es necesario reiniciar."
-    echo "Puedes iniciar Hyprland manualmente con: Hyprland"
-fi
+echo "Para iniciar Hyprland:"
+echo "   export XDG_SESSION_TYPE=wayland"
+echo "   export XDG_CURRENT_DESKTOP=Hyprland"
+echo "   exec Hyprland"
+echo "Hyprlock ahora se iniciará automáticamente al iniciar Hyprland."
