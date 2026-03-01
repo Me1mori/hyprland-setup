@@ -1,6 +1,6 @@
 # Core
 hyprland
-hyprlock
+# hyprlock
 hyprpaper
 xdg-desktop-portal-hyprland
 wayland
