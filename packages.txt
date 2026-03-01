@@ -11,17 +11,19 @@ dbus
 # UI / Compositor + Barra + Launchers
 waybar
 swaync
-eww
 swww
 rofi-wayland
+rofi-calc
 rofi
 kitty
 dunst
 fastfetch
-waypaper
 mako
 xbindkeys
 thunar
+nano
+rsync
+sudo
 
 
 # System / Audio / Network / Permissions
@@ -37,7 +39,6 @@ xdg-user-dirs
 xdg-utils
 udisks2
 gvfs
-sudo
 
 
 # Utils
@@ -47,6 +48,7 @@ slurp
 brightnessctl
 playerctl
 firefox
+exa
 
 
 # Fonts
