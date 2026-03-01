@@ -22,7 +22,7 @@ window#waybar {
 #custom-user {
     padding: 0 12px 0 34px;
     border-radius: 0 0 0 0;
-    background-image: url("/home/{env:USER}/.config/hypr/face.png");
+    background-image: url("/usr/share/pixmaps/archlinux-logo.png");
     background-size: 20px 20px;
     background-repeat: no-repeat;
     background-position: 8px center;
@@ -98,27 +98,3 @@ window#waybar {
     padding: 0 10px;
     border-radius: 14px;
 }
-
-/* -------------------------
-   Ajuste compacto para monitores secundarios
-   (detectar monitor principal con output: 0)
-------------------------- */
-window#waybar:not([id="0"]) > * {
-    font-size: 12px;
-}
-
-window#waybar:not([id="0"]) #memory,
-window#waybar:not([id="0"]) #cpu,
-window#waybar:not([id="0"]) #temperature,
-window#waybar:not([id="0"]) #custom-gpu,
-window#waybar:not([id="0"]) #custom-gpu_temp {
-    border-radius: 0;
-    margin: 0;
-    padding: 0 5px;
-}
-
-window#waybar:not([id="0"]) #memory  { border-radius: 0 0 0 14px; }
-window#waybar:not([id="0"]) #cpu     { padding: 0 2px 0 8px; }
-window#waybar:not([id="0"]) #temperature { padding: 0 8px 0 2px; }
-window#waybar:not([id="0"]) #custom-gpu { padding: 0 2px 0 8px; }
-window#waybar:not([id="0"]) #custom-gpu_temp { padding: 0 8px 0 2px; }
