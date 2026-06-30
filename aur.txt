@@ -1,9 +1,0 @@
-yay
-hyprshot
-eww
-waypaper
-rofi-power-menu
-xdg-desktop-portal-hyprland
-grim
-slurp
-protonplus
